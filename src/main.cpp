@@ -19,8 +19,10 @@
 // ---------------------------------------------------------------------------
                 
 #define count(ARRAY) (sizeof(ARRAY) / sizeof(*ARRAY))
-#define CUST_PIXELS_PER_LINE 8
-#define CUST_DIGIT_COUNT 10
+#define CUST_PIXELS_PER_LINE  5
+#define CUST_LINES_PER_CHAR   8  
+#define CUST_DIGIT_COUNT      10 // Max no. of digits to choose from
+#define CUST_DIGIT_MAX        8  // Max. 8 characters in CGRAM
 
 // DUE Ports
 #define   D7 13
@@ -36,8 +38,8 @@ LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);
 // Custom characters
 
 struct Digit {
-    uint8_t digit[CUST_PIXELS_PER_LINE];
     String digit_name;
+    uint8_t digit[CUST_LINES_PER_CHAR];
 };
 
 struct DigitCollection {
@@ -85,38 +87,30 @@ Digit *getCharset(String collection_name)  {
   return NULL;
 }
 
-uint8_t *invert_char(uint8_t chr[8]) {
-  uint8_t temp_chr[8];
+uint8_t *invert_char(uint8_t digit[CUST_DIGIT_COUNT]) {
+  // declare static as address of local pointer becomes garbage outside of this scope.
+  static uint8_t temp_glyph[CUST_LINES_PER_CHAR]; 
 
-  // skip 0 as the first line should stay off
-  for (int i = 1; i < 8; i += 1) {
-    temp_chr[i] = ~chr[i];
+  for (int i = 0; i < CUST_LINES_PER_CHAR; i++) {
+    temp_glyph[i] = ~digit[i];
   }
 
-  return temp_chr;
+  return temp_glyph;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  Serial.println(0b00000011, BIN);
 void buildCustomChars(String collection_name, bool invert = false, int start = 0, int end = CUST_DIGIT_COUNT) {
   Digit *glyphs = getCharset(collection_name);
 
-  // Max. 8 characters in CGRAM
-  for (int i = start; i < 8 && i < end + 1; i++) {
+  for (int i = start; i < CUST_DIGIT_MAX && i < end + 1; i++) {
 
     if (invert == true) {
-      uint8_t temp_chr[8];
-      // skip 0 as the first line should stay off
-      for (int i = 1; i < 8; i += 1) {
-        temp_chr[i] = *glyphs[i].digit;
-      }
+      uint8_t *temp_glyph;
+      
+      // Invert bits
+      temp_glyph = invert_char(glyphs[i].digit);
 
-      Serial.print("::");
-      Serial.println(temp_chr[2], BIN);
-
-      lcd.createChar(i, temp_chr);
-      // lcd.createChar(i, invert_char(glyphs[i].digit));
-      // while(1){};
+      lcd.createChar(i, temp_glyph);
     } else {
       lcd.createChar(i, glyphs[i].digit);
     }
