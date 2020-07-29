@@ -81,6 +81,8 @@ Digit *getCharset(String collection_name)  {
     if (customChars[i].collection_name == collection_name)
       return customChars[i].digits;
   }
+
+  return NULL;
 }
 
 uint8_t *invert_char(uint8_t chr[8]) {
