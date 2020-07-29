@@ -77,7 +77,7 @@ static struct DigitCollection customChars[] = {
 /* HELPER FUNCTIONS /////////////////////////////////////////////////*/
 
 Digit *getCharset(String collection_name)  {
-  for (int i = 0; i < count(customChars); i++) {
+  for (unsigned int i = 0; i < count(customChars); i++) {
     if (customChars[i].collection_name == collection_name)
       return customChars[i].digits;
   }
