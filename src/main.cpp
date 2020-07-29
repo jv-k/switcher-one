@@ -36,12 +36,12 @@ LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);
 // Custom characters
 
 struct Digit {
-    const char * digit_name;
     uint8_t digit[CUST_PIXELS_PER_LINE];
+    String digit_name;
 };
 
 struct DigitCollection {
-    const char * collection_name;
+    String collection_name;
     Digit digits[CUST_DIGIT_COUNT];
 };
 
@@ -76,7 +76,7 @@ static struct DigitCollection customChars[] = {
 
 /* HELPER FUNCTIONS /////////////////////////////////////////////////*/
 
-Digit *getCharset(char *collection_name)  {
+Digit *getCharset(String collection_name)  {
   for (int i = 0; i < count(customChars); i++) {
     if (customChars[i].collection_name == collection_name)
       return customChars[i].digits;
@@ -95,10 +95,9 @@ uint8_t *invert_char(uint8_t chr[8]) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void buildCustomChars(char *setName, bool invert = false, int start = 0, int end = CUST_DIGIT_COUNT) {
-  Digit *glyphs = getCharset(setName);
-
   Serial.println(0b00000011, BIN);
+void buildCustomChars(String collection_name, bool invert = false, int start = 0, int end = CUST_DIGIT_COUNT) {
+  Digit *glyphs = getCharset(collection_name);
 
   // Max. 8 characters in CGRAM
   for (int i = start; i < 8 && i < end + 1; i++) {
