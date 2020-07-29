@@ -6,8 +6,16 @@ Misson Control
 
 #include  <LiquidCrystal.h>
 
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+//const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+
+const int D7 = 13, 
+                D6 = 12, 
+                D5 = 11, 
+                D4 = 10,
+                EN = 7,
+                RS = 6;
+                
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
 int y = 1000;
 
@@ -152,4 +160,3 @@ void loop() {
   welcome();
   menu();
 }
-
