@@ -20,6 +20,11 @@
 // Constant definitions
 /////////////////////////////////////////////////////////////////////////////////////////
 
+#define DEBUG_MODE_CHARS 0b0001
+#define DEBUG_MODE_MODE1 0b0010
+#define DEBUG_MODE_MODE2 0b0011 //etc
+#define DEBUG_MODE 0b0000 | DEBUG_MODE_CHARS
+
 #define CUST_PIXELS_PER_LINE  5
 #define CUST_LINES_PER_CHAR   8  
 #define CUST_DIGIT_COUNT      10 // Max no. of digits to choose from
@@ -127,6 +132,15 @@ void buildCustomChars(String collection_name,
   Digit *glyphs = getCharset(collection_name);
 
   for (int i = start; i < CUST_DIGIT_MAX && i < end + 1; i++) {
+    if (DEBUG_MODE && DEBUG_MODE_CHARS) {
+      Serial.print("\nCHAR_POS:");
+      Serial.print(i);
+      Serial.print("|DIGIT:");
+      Serial.print(glyphs[i].digit_name);
+      Serial.print("|");
+      Serial.print("RAM:");
+      Serial.print(cgram_i);
+    }
 
     if (invert == true) {
       uint8_t *temp_glyph;
