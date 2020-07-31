@@ -9,7 +9,10 @@
  */
 
 #include <Arduino.h>
-#include <LiquidCrystal.h>
+// #include <LiquidCrystal.h>
+// #include <WinstarOLEDGFX.h>
+#include <Adafruit_CharacterOLED.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,7 +42,10 @@
 #define   RW 6
 #define   RS 5
 
-LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);
+// LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);
+
+// WinstarOLEDGFX lcd(RS, RW, EN, D4, D5, D6, D7);
+Adafruit_CharacterOLED lcd(OLED_V2, RS, RW, EN, D4, D5, D6, D7);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Custom 5x8 OLED Character Patterns (CGRAM data)
@@ -263,15 +269,29 @@ void setup() {
 
   Serial.begin(57600); 
   Serial.println("\n//////////////////////////////////////////////////");
-  Serial.println("\nOROBOROS SWITCHERONE UI v0.1-alpha");
+  Serial.println("\nOROBOROS SWITCHERONE UI v0.2-alpha");
   Serial.println("\n//////////////////////////////////////////////////");
   
+  // /*
   lcd.begin(16,2);
   lcd.clear();
+  // */
+
+  /*
+  lcd.begin(16, 2, LCD_5x8DOTS, LCD_CHARACTER);
+  lcd.print("hello OLED World");  
+  // */
 }
 
 void loop() {
+  // /*
   welcome();
   delay(2000);
   menu();
+  //*/
+
+  /*
+  lcd.setCursor(0, 1);
+  lcd.print(millis()/1000);
+  //*/
 }
