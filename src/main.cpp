@@ -1,13 +1,12 @@
-// ---------------------------------------------------------------------------
-// Created by John Valai on 20/08/11.
-// Copyright (C) - 2020
-//
-// ---------------------------------------------------------------------------
-// OROBOROS AUDIO SYSTEMS
-// SwitcherOne
-//
-// @author J. V. Kamaly - hi@jvk.to
-// ---------------------------------------------------------------------------
+/**
+ * OROBOROS AUDIO SYSTEMS
+ * SwitcherOne
+ * 
+ * Copyright (C)2020
+ * 
+ * @file main.cpp
+ * @author John V. Kamaly - hi@jvk.to
+ */
 
 #include <Arduino.h>
 #include <LiquidCrystal.h>
@@ -15,10 +14,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// CONSTANT definitions
-// ---------------------------------------------------------------------------
                 
 #define count(ARRAY) (sizeof(ARRAY) / sizeof(*ARRAY))
+/////////////////////////////////////////////////////////////////////////////////////////
+// Constant definitions
+/////////////////////////////////////////////////////////////////////////////////////////
+
 #define CUST_PIXELS_PER_LINE  5
 #define CUST_LINES_PER_CHAR   8  
 #define CUST_DIGIT_COUNT      10 // Max no. of digits to choose from
@@ -35,7 +36,12 @@
 
 LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);
 
-// Custom characters
+/////////////////////////////////////////////////////////////////////////////////////////
+// Custom 5x8 OLED Character Patterns (CGRAM data)
+//
+// Bit position 7 6 5 4 3 2 1 0
+//              - - - 1 1 1 1 0 etc  (- denotes not used, so only bits 0..4)
+/////////////////////////////////////////////////////////////////////////////////////////
 
 struct Digit {
     String digit_name;
@@ -47,6 +53,7 @@ struct DigitCollection {
     Digit digits[CUST_DIGIT_COUNT];
 };
 
+// Character (glyph) patterns
 static struct DigitCollection customChars[] = {
   { "Nums", { 
     { "0", { 0b00000,  0b00000,  0b01110,  0b01010,  0b01010,  0b01010,  0b01110,  0b00000 }},
@@ -76,7 +83,9 @@ static struct DigitCollection customChars[] = {
   }
 };
 
-/* HELPER FUNCTIONS /////////////////////////////////////////////////*/
+/////////////////////////////////////////////////////////////////////////////////////////
+// Helper functions
+/////////////////////////////////////////////////////////////////////////////////////////
 
 Digit *getCharset(String collection_name)  {
   for (unsigned int i = 0; i < count(customChars); i++) {
@@ -98,8 +107,23 @@ uint8_t *invert_char(uint8_t digit[CUST_DIGIT_COUNT]) {
   return temp_glyph;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void buildCustomChars(String collection_name, bool invert = false, int start = 0, int end = CUST_DIGIT_COUNT) {
+/**
+ * Creates custom digit and places it in CGRAN
+ *
+ * @param collection_name Name of character pattern collection to fetch pattern (glyphs) from
+ * @param invert    Option to invert pixels
+ * @param char_pos Index of character collection struct array to start fetching from
+ * @param num_chars How many characters 
+ * @param cgram_pos The Character Generator RAM (CGRAM) is used to generate custom 5x8 character patterns. 
+ *                  There are 8 available addresses: CGRAM Address 0x00 through 0x07.
+ *                  CGRAM is stored in positions 0x00 through 0x07 of the font table.
+ * @return nothing
+ */
+void buildCustomChars(String collection_name, 
+                      bool invert = false, 
+                      int char_pos = 0, 
+                      int num_chars = CUST_DIGIT_CGRAM_MAX, 
+                      int cgram_pos = 0) {
   Digit *glyphs = getCharset(collection_name);
 
   for (int i = start; i < CUST_DIGIT_MAX && i < end + 1; i++) {
@@ -141,8 +165,10 @@ void demoLettersS() {
   // reset chars
   // buildCustomNumChars();
 }
+/////////////////////////////////////////////////////////////////////////////////////////
+// Display Functions
+/////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void demoNums() {
   int offset = 1;
 
@@ -228,6 +254,9 @@ void menu() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+// Main Functions
+/////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
 
