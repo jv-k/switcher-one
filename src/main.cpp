@@ -14,8 +14,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-                
-#define count(ARRAY) (sizeof(ARRAY) / sizeof(*ARRAY))
 /////////////////////////////////////////////////////////////////////////////////////////
 // Constant definitions
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +26,9 @@
 #define CUST_PIXELS_PER_LINE  5
 #define CUST_LINES_PER_CHAR   8  
 #define CUST_DIGIT_COUNT      10 // Max no. of digits to choose from
-#define CUST_DIGIT_MAX        8  // Max. 8 characters in CGRAM
+#define CUST_DIGIT_CGRAM_MAX  8  // Max. 8 characters in CGRAM
+
+#define count(ARRAY) (sizeof(ARRAY) / sizeof(*ARRAY))
 
 // DUE Ports
 #define   D7 13
@@ -82,7 +82,7 @@ static struct DigitCollection customChars[] = {
   },
   { "LetterLg", { 
     { "A", {  0b01110,  0b11011,  0b11011,  0b11011,  0b11111,  0b11011,  0b11011,  0b11011 }},
-    { "B", {  0b11110,  0b11011,  0b11011,  0b11011,  0b11111,  0b11011,  0b11011,  0b11110 }},
+    { "B", {  0b11110,  0b11011,  0b11011,  0b11111,  0b11011,  0b11011,  0b11011,  0b11110 }},
     { "C", {  0b11110,  0b11011,  0b11000,  0b11000,  0b11000,  0b11000,  0b11011,  0b11110 }}
   }
   }
@@ -131,7 +131,10 @@ void buildCustomChars(String collection_name,
                       int cgram_pos = 0) {
   Digit *glyphs = getCharset(collection_name);
 
-  for (int i = start; i < CUST_DIGIT_MAX && i < end + 1; i++) {
+  int cgram_i = cgram_pos;
+
+  for (int i = char_pos; (i < num_chars + char_pos) && (i < CUST_DIGIT_CGRAM_MAX + 1); i++) {
+
     if (DEBUG_MODE && DEBUG_MODE_CHARS) {
       Serial.print("\nCHAR_POS:");
       Serial.print(i);
@@ -143,72 +146,65 @@ void buildCustomChars(String collection_name,
     }
 
     if (invert == true) {
-      uint8_t *temp_glyph;
-      
-      // Invert bits
+      uint8_t *temp_glyph;      
       temp_glyph = invert_char(glyphs[i].digit);
-
-      lcd.createChar(i, temp_glyph);
+      lcd.createChar(cgram_i, temp_glyph);
     } else {
-      lcd.createChar(i, glyphs[i].digit);
+      lcd.createChar(cgram_i, glyphs[i].digit);
     }
+    cgram_i++;
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void demoLettersS() {
-  buildCustomChars("LetterSm");
-  
-  lcd.setCursor(12, 1);
-  for (int i = 0; i < 4; i++)  {
-    lcd.write(i);    
-  }
-
-  delay(1000);
-
-  // invert them in sequence
-  for (int i = 0; i < 4; i++) {
-    buildCustomChars("LetterSm", true, i, i + 1);
-    
-    lcd.setCursor(i + 12, 1);
-    lcd.write(i);
-    
-    delay(600);
-  }
-
-  // reset chars
-  // buildCustomNumChars();
-}
 /////////////////////////////////////////////////////////////////////////////////////////
 // Display Functions
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void demoNums() {
-  int offset = 1;
 
   // numbers 1-8
-  // buildCustomChars(customNumChars, offset);
-  buildCustomChars("Nums");
-  
-  for (int i = 0; i < 8; i++)  {
-    lcd.setCursor(i + 8, 1);
-    lcd.write(i);    
-  }
 
+  int char_pos,
+      num_chars,
+      cgram_pos,
+      pos_x;
+
+  char_pos = 1; num_chars = 5; cgram_pos = 0; pos_x = 16 - num_chars;
+  buildCustomChars("Nums", false, char_pos, num_chars, cgram_pos);
+  for (int i = 0; i < num_chars; i++) {
+    lcd.setCursor(pos_x + i, 1);
+    lcd.write(cgram_pos + i);
+  }
   delay(1000);
 
+  // /*
+  char_pos = 0; num_chars = 3; cgram_pos = 5; pos_x = 0;
+  buildCustomChars("LetterLg", false, char_pos, num_chars, cgram_pos);
+  for (int i = 0; i < num_chars; i++) {
+    lcd.setCursor(pos_x + i, 1);
+    lcd.write(cgram_pos + i);
+  }
+  delay(1000);
+  //*/
+
   // invert them in sequence
-  for (int i = 0; i < 8; i += 1) {
-    // lcd.createChar(i, invert_char(customNumChars[i + offset].digit));
-    
-    lcd.setCursor(i + 8, 1);
-    lcd.write(i);
-    
+  char_pos = 1; num_chars = 1; cgram_pos = 0;
+  for (int i = 0; i < 5; i++) {
+    buildCustomChars("Nums", true, char_pos + i, num_chars, cgram_pos + i);
+       
     delay(600);
   }
 
-  // reset chars
-  // buildCustomNumChars();
+  delay(2000);
+
+  lcd.clear();
+
+  char_pos = 1; num_chars = 8; cgram_pos = 0; pos_x = 16 - num_chars;
+  buildCustomChars("Nums", false, char_pos, num_chars, cgram_pos);
+  for (int i = 0; i < num_chars; i++) {
+    lcd.setCursor(pos_x + i, 1);
+    lcd.write(cgram_pos + i);
+  }
 }
 
 //set up the welcome part
@@ -230,44 +226,35 @@ void menu() {
 
   lcd.print("01 JUPITER+BACK");   
    
-  // demoLettersS();
-  return;
-
-  delay(1000);
-  
   demoNums();
   
+  lcd.setCursor(0,0);
+  lcd.print("01 JUPITER+BACK");   
+
   delay(2000);
 
   lcd.setCursor(0,0);
   lcd.print("02 SERENDIPITY ");   
 
-  // lcd.createChar(2, invert_char(customChars[2+1]));
-  lcd.setCursor(2 + 8, 1);
-  lcd.write(2);  
+  buildCustomChars("Nums", true, 2, 1, 1);
 
   delay(2000);
 
   lcd.setCursor(0,0);
   lcd.print("03 CAVIAR 4 PIGS");   
 
-  // lcd.createChar(6, invert_char(customChars[6+1]));
-  lcd.setCursor(6 + 8, 1);
-  lcd.write(6);    
+  buildCustomChars("Nums", true, 6, 1, 5);
 
   delay(2000);
   
   lcd.setCursor(0,0);
   lcd.print("04 SHINE ON CRZY");   
 
-  // lcd.createChar(4, invert_char(customChars[4+1]));
-  lcd.setCursor(4 + 8, 1);
-  lcd.write(4);    
-  
+  buildCustomChars("Nums", true, 4, 1, 3);
+ 
   delay(5000);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 // Main Functions
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -275,35 +262,16 @@ void menu() {
 void setup() {
 
   Serial.begin(57600); 
-  Serial.write("MOTHAFUCKA!\n");
+  Serial.println("\n//////////////////////////////////////////////////");
+  Serial.println("\nOROBOROS SWITCHERONE UI v0.1-alpha");
+  Serial.println("\n//////////////////////////////////////////////////");
+  
   lcd.begin(16,2);
   lcd.clear();
 }
 
 void loop() {
-  // welcome();
-  // delay(3000);
+  welcome();
+  delay(2000);
   menu();
-
-  buildCustomChars("LetterSm", false, 0, 3);
-  buildCustomChars("Nums", false, 4, 8);
- 
-  lcd.setCursor(0,1);
-
-  lcd.write((int)0);
-  lcd.write(1);
-  lcd.write(1);
-  lcd.write(2);
-  lcd.write(3);
-
-  lcd.write(4);
-  lcd.write(5);
-  lcd.write(6);
-  lcd.write(7);
-
-  delay(1000);
-
-  buildCustomChars("LetterSm", true, 0, 0);
-
-  while(1){};
 }
